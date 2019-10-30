@@ -148,15 +148,49 @@ public class ReachingDefs implements Flow.Analysis {
      * See Flow.java for the meaning of these methods.
      * These need to be filled in.
      */
-    public boolean isForward () { return false; }
-    public Flow.DataflowObject getEntry() { return null; }
-    public Flow.DataflowObject getExit() { return null; }
-    public void setEntry(Flow.DataflowObject value) {}
-    public void setExit(Flow.DataflowObject value) {}
-    public Flow.DataflowObject getIn(Quad q) { return null; }
-    public Flow.DataflowObject getOut(Quad q) { return null; }
-    public void setIn(Quad q, Flow.DataflowObject value) {}
-    public void setOut(Quad q, Flow.DataflowObject value) {}
-    public Flow.DataflowObject newTempVar() { return null; }
-    public void processQuad(Quad q) {}
+    public boolean isForward () {
+        return true;
+    }
+    public Flow.DataflowObject getEntry() {
+        Flow.DataflowObject ret = newTempVar();
+        ret.copy(entry);
+        return ret;
+    }
+    public Flow.DataflowObject getExit() {
+        Flow.DataflowObject ret = newTempVar();
+        ret.copy(exit);
+        return ret;
+    }
+    public void setEntry(Flow.DataflowObject value) {
+        entry.copy(value);
+    }
+    public void setExit(Flow.DataflowObject value) {
+        exit.copy(value);
+    }
+    public Flow.DataflowObject getIn(Quad q) {
+        Flow.DataflowObject ret = newTempVar();
+        ret.copy(in[q.getID()]);
+        return ret;
+    }
+    public Flow.DataflowObject getOut(Quad q) {
+        Flow.DataflowObject ret = newTempVar();
+        ret.copy(out[q.getID()]);
+        return ret;
+    }
+    public void setIn(Quad q, Flow.DataflowObject value) {
+        in[q.getID()].copy(value);
+    }
+    public void setOut(Quad q, Flow.DataflowObject value) {
+        out[q.getID()].copy(value);
+    }
+    public Flow.DataflowObject newTempVar() {
+        return new MyDataflowObject();
+    }
+    public void processQuad(Quad q) {
+        out[q.getID()].copy(in[q.getID()]);
+        for (Operand.RegisterOperand def : q.getDefinedRegisters()) {
+            out[q.getID()].definitions.get(def.getRegister().toString()).add(q.getID());
+            // out[q.getID()].genDef(def.getRegister().toString(), q.getID());
+        }
+    }
 }

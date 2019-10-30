@@ -107,7 +107,7 @@ public class MySolver implements Flow.Solver {
                             blockOut.meetWith(analysis.getIn(next));
                     }
                     analysis.setOut(current, blockOut);
-
+                    
                     Flow.DataflowObject beforeFB = analysis.newTempVar();
                     beforeFB.copy(analysis.getIn(current));
                     // OUT[B] = fB(IN[B])
