@@ -25,14 +25,13 @@ public class ReachingDefs implements Flow.Analysis {
          */
         // every definition consists of the name of var and its positions(may be more than one position)
         Map<String, Set<Integer>> definitions = new HashMap<String, Set<Integer>>();
-
+        static Map<String, Set<Integer>> bottom = new HashMap<String, Set<Integer>>();
 
         public void setToTop() {
             definitions.clear(); // empty set is the top element
         }
         public void setToBottom() {
-            // do I need to finish this method?
-            System.out.println("SetToBottom\n\n");
+            definitions = new HashMap<String, Set<Integer>>(bottom);
         }
         public void meetWith (Flow.DataflowObject o) {
             MyDataflowObject obj = (MyDataflowObject)o;
@@ -110,6 +109,17 @@ public class ReachingDefs implements Flow.Analysis {
         /************************************************
          * Your remaining initialization code goes here *
          ************************************************/
+        // I need to init MyDataflowObject.bottom here
+        qit = new QuadIterator(cfg);
+        while (qit.hasNext()){
+            Quad current = qit.next();
+            for (Operand.RegisterOperand def: current.getDefinedRegisters()) {
+                String var = def.getRegister().toString();
+                if (! MyDataflowObject.bottom.containsKey(var))
+                    MyDataflowObject.bottom.put(var, new HashSet<Integer>());
+                MyDataflowObject.bottom.get(var).add(current.getID());
+            }
+        }
 
     }
 
