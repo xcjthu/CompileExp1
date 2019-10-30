@@ -1,0 +1,3 @@
+[the first time test log]
+the ConstantProp test is passed, however the liveness test is failed, which means the algorithm is right when the direction is forward and if the direction is backward, it will fail
+
