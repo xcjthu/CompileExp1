@@ -47,6 +47,11 @@ public class ReachingDefs implements Flow.Analysis {
             definitions = new HashMap<String, Set<Integer>>(((MyDataflowObject)o).definitions);
         }
 
+        @Override
+        public boolean equals(Object o){
+            return ((MyDataflowObject) o).definitions.equals(definitions);
+        }
+
         /**
          * toString() method for the dataflow objects which is used
          * by postprocess() below.  The format of this method must
@@ -196,7 +201,7 @@ public class ReachingDefs implements Flow.Analysis {
         return new MyDataflowObject();
     }
     public void processQuad(Quad q) {
-        System.out.println("confusing!");
+        // System.out.println("confusing!");
         out[q.getID()].copy(in[q.getID()]);
         for (Operand.RegisterOperand def : q.getDefinedRegisters()) {
             HashSet pos =  new HashSet<Integer>();
