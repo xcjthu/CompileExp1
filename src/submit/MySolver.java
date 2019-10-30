@@ -4,6 +4,9 @@ package submit;
 import joeq.Compiler.Quad.*;
 import flow.Flow;
 
+import java.util.Iterator;
+import java.util.Queue;
+
 /**
  * Skeleton class for implementing the Flow.Solver interface.
  */
@@ -36,6 +39,50 @@ public class MySolver implements Flow.Solver {
         /***********************
          * Your code goes here *
          ***********************/
+        boolean changed = true;
+        if (analysis.isForward()){
+            //set boundary condition
+            while (changed) {
+                // there are more than one exit blocks, therefore i need to compute the exit value additionally
+                Flow.DataflowObject exitValue = analysis.newTempVar();
+                exitValue.setToTop();
+
+                changed = false;
+                QuadIterator iter = new QuadIterator(cfg, true);
+                while ((iter.hasNext())){
+                    Quad current = iter.next();
+
+                    // compute the IN[B] = meet(OUT[P])
+                    Flow.DataflowObject blockIn = analysis.newTempVar();
+                    blockIn.setToTop();
+                    Iterator<Quad> fores = iter.predecessors();
+                    while (fores.hasNext()){
+                        Quad fore = fores.next();
+                        blockIn.meetWith(analysis.getOut(fore));
+                    }
+                    analysis.setIn(current, blockIn);
+
+                    Flow.DataflowObject beforeFB = analysis.newTempVar();
+                    beforeFB.copy(analysis.getOut(current));
+                    // OUT[B] = fB(IN[B])
+                    analysis.processQuad(current);
+                    if (! beforeFB.equals(analysis.getOut(current)))
+                        changed = true;
+
+                    // additionally compute the exit value
+                    Iterator<Quad> nexts = iter.successors();
+                    while (nexts.hasNext()){
+                        Quad tmp = nexts.next();
+                        if (tmp == null)
+                            exitValue.meetWith(analysis.getOut(current));
+                    }
+
+                }
+                analysis.setExit(exitValue);
+            }
+        }else {
+
+        }
 
         // this needs to come last.
         analysis.postprocess(cfg);
