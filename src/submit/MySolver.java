@@ -58,7 +58,10 @@ public class MySolver implements Flow.Solver {
                     Iterator<Quad> fores = iter.predecessors();
                     while (fores.hasNext()){
                         Quad fore = fores.next();
-                        blockIn.meetWith(analysis.getOut(fore));
+                        if (fore == null) // i.e. the block is one of the entry block
+                            blockIn.meetWith(analysis.getEntry());
+                        else
+                            blockIn.meetWith(analysis.getOut(fore));
                     }
                     analysis.setIn(current, blockIn);
 
@@ -81,6 +84,48 @@ public class MySolver implements Flow.Solver {
                 analysis.setExit(exitValue);
             }
         }else {
+            while (changed){
+                // copy the code for forward
+                Flow.DataflowObject entryValue = analysis.newTempVar();
+                entryValue.setToTop();
+
+                changed = false;
+                QuadIterator iter = new QuadIterator(cfg, false);
+                while ((iter.hasPrevious())){
+                    Quad current = iter.previous();
+
+                    // compute the IN[B] = meet(OUT[P])
+                    Flow.DataflowObject blockOut = analysis.newTempVar();
+                    blockOut.setToTop();
+
+                    Iterator<Quad> nexts = iter.successors();
+                    while (nexts.hasNext()){
+                        Quad next = nexts.next();
+                        if (next == null) // i.e. the block is one of the exit block
+                            blockOut.meetWith(analysis.getExit());
+                        else
+                            blockOut.meetWith(analysis.getIn(next));
+                    }
+                    analysis.setOut(current, blockOut);
+
+                    Flow.DataflowObject beforeFB = analysis.newTempVar();
+                    beforeFB.copy(analysis.getIn(current));
+                    // OUT[B] = fB(IN[B])
+                    analysis.processQuad(current);
+                    if (! beforeFB.equals(analysis.getIn(current)))
+                        changed = true;
+
+                    // additionally compute the entry value
+                    Iterator<Quad> fores = iter.predecessors();
+                    while (fores.hasNext()){
+                        Quad tmp = nexts.next();
+                        if (tmp == null)
+                            entryValue.meetWith(analysis.getOut(current));
+                    }
+
+                }
+                analysis.setEntry(entryValue);
+            }
 
         }
 
