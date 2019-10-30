@@ -32,6 +32,7 @@ public class ReachingDefs implements Flow.Analysis {
         }
         public void setToBottom() {
             // do I need to finish this method?
+            System.out.println("SetToBottom\n\n");
         }
         public void meetWith (Flow.DataflowObject o) {
             MyDataflowObject obj = (MyDataflowObject)o;
