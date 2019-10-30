@@ -4,6 +4,8 @@ package submit;
 import joeq.Compiler.Quad.*;
 import flow.Flow;
 
+import java.util.*;
+
 /**
  * Skeleton class for implementing a reaching definition analysis
  * using the Flow.Analysis interface.
@@ -15,15 +17,35 @@ public class ReachingDefs implements Flow.Analysis {
      * You are free to change this class or move it to another file.
      */
     public class MyDataflowObject implements Flow.DataflowObject {
+        // the dataflowobject is definitions, i need to complete the methods for this class
         /**
          * Methods from the Flow.DataflowObject interface.
          * See Flow.java for the meaning of these methods.
          * These need to be filled in.
          */
-        public void setToTop() {}
-        public void setToBottom() {}
-        public void meetWith (Flow.DataflowObject o) {}
-        public void copy (Flow.DataflowObject o) {}
+        // every definition consists of the name of var and its positions(may be more than one position)
+        Map<String, Set<Integer>> definitions = new HashMap<String, Set<Integer>>();
+
+
+        public void setToTop() {
+            definitions.clear(); // empty set is the top element
+        }
+        public void setToBottom() {
+            // do I need to finish this method?
+        }
+        public void meetWith (Flow.DataflowObject o) {
+            MyDataflowObject obj = (MyDataflowObject)o;
+            Iterator iter = obj.definitions.keySet().iterator();
+            while (iter.hasNext()){
+                String var = (String) iter.next();
+                if (! definitions.containsKey(var))
+                    definitions.put(var, new HashSet<Integer>());
+                definitions.get(var).addAll(obj.definitions.get(var));
+            }
+        }
+        public void copy (Flow.DataflowObject o) {
+            definitions = new HashMap<String, Set<Integer>>(((MyDataflowObject)o).definitions);
+        }
 
         /**
          * toString() method for the dataflow objects which is used
@@ -87,6 +109,7 @@ public class ReachingDefs implements Flow.Analysis {
         /************************************************
          * Your remaining initialization code goes here *
          ************************************************/
+
     }
 
     /**
