@@ -16,7 +16,7 @@ public class ReachingDefs implements Flow.Analysis {
      * Class for the dataflow objects in the ReachingDefs analysis.
      * You are free to change this class or move it to another file.
      */
-    public class MyDataflowObject implements Flow.DataflowObject {
+    public static class MyDataflowObject implements Flow.DataflowObject {
         // the dataflowobject is definitions, i need to complete the methods for this class
         /**
          * Methods from the Flow.DataflowObject interface.
@@ -25,7 +25,7 @@ public class ReachingDefs implements Flow.Analysis {
          */
         // every definition consists of the name of var and its positions(may be more than one position)
         Map<String, Set<Integer>> definitions = new HashMap<String, Set<Integer>>();
-        static Map<String, Set<Integer>> bottom;
+        static Map<String, Set<Integer>> bottom = new HashMap<String, Set<Integer>>();
 
         public void setToTop() {
             definitions.clear(); // empty set is the top element
@@ -110,7 +110,6 @@ public class ReachingDefs implements Flow.Analysis {
          * Your remaining initialization code goes here *
          ************************************************/
         // I need to init MyDataflowObject.bottom here
-        MyDataflowObject.bottom = new HashMap<String, Set<Integer>>();
         qit = new QuadIterator(cfg);
         while (qit.hasNext()){
             Quad current = qit.next();
