@@ -120,7 +120,7 @@ public class MySolver implements Flow.Solver {
                     while (fores.hasNext()){
                         Quad tmp = nexts.next();
                         if (tmp == null)
-                            entryValue.meetWith(analysis.getOut(current));
+                            entryValue.meetWith(analysis.getIn(current));
                     }
 
                 }
