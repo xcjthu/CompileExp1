@@ -151,6 +151,7 @@ public class ReachingDefs implements Flow.Analysis {
     public boolean isForward () {
         return true;
     }
+    // the interface below is to get the value of specific variable. Cannot return the variable directly as it may be changed
     public Flow.DataflowObject getEntry() {
         Flow.DataflowObject ret = newTempVar();
         ret.copy(entry);
@@ -187,6 +188,7 @@ public class ReachingDefs implements Flow.Analysis {
         return new MyDataflowObject();
     }
     public void processQuad(Quad q) {
+        System.out.println("confusing!");
         out[q.getID()].copy(in[q.getID()]);
         for (Operand.RegisterOperand def : q.getDefinedRegisters()) {
             HashSet pos =  new HashSet<Integer>();
