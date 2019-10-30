@@ -189,8 +189,9 @@ public class ReachingDefs implements Flow.Analysis {
     public void processQuad(Quad q) {
         out[q.getID()].copy(in[q.getID()]);
         for (Operand.RegisterOperand def : q.getDefinedRegisters()) {
-            out[q.getID()].definitions.get(def.getRegister().toString()).add(q.getID());
-            // out[q.getID()].genDef(def.getRegister().toString(), q.getID());
+            HashSet pos =  new HashSet<Integer>();
+            pos.add(q.getID());
+            out[q.getID()].definitions.put(def.getRegister().toString(), pos); // add/replace the original definition position of the var
         }
     }
 }
