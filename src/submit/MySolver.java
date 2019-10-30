@@ -118,7 +118,7 @@ public class MySolver implements Flow.Solver {
                     // additionally compute the entry value
                     Iterator<Quad> fores = iter.predecessors();
                     while (fores.hasNext()){
-                        Quad tmp = nexts.next();
+                        Quad tmp = fores.next();
                         if (tmp == null)
                             entryValue.meetWith(analysis.getIn(current));
                     }
