@@ -57,7 +57,15 @@ public class ReachingDefs implements Flow.Analysis {
          * your reaching definitions analysis must match this exactly.
          */
         @Override
-        public String toString() { return ""; }
+        public String toString() {
+            TreeSet<Integer> ret = new TreeSet<Integer>(); //TreeSet will sort the variable automatically
+            Iterator<String> iter = definitions.keySet().iterator();
+            while (iter.hasNext()){
+                String key = iter.next();
+                ret.addAll(definitions.get(key));
+            }
+            return ret.toString();
+        }
     }
 
     /**
