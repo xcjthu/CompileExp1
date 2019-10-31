@@ -23,20 +23,23 @@ public class Faintness implements Flow.Analysis {
          * See Flow.java for the meaning of these methods.
          * These need to be filled in.
          */
-        private Set<String> set = new TreeSet<String>();
+        private Set<String> set;// = new TreeSet<String>();
         public static Set<String> universalSet = new TreeSet<String>();
-
-        public void setToTop() {
+		
+		public MyDataflowObject(){
+			set = new TreeSet<String>(universalSet);
+		}
+        public void setToBottom() {
             set = new TreeSet<String>();
         }
 
-        public void setToBottom() {
+        public void setToTop() {
             set = new TreeSet<String>(universalSet);
         }
 
         public void meetWith (Flow.DataflowObject o) {
             MyDataflowObject obj = (MyDataflowObject) o;
-            set.addAll(obj.set);
+            set.retainAll(obj.set);
         }
         public void copy (Flow.DataflowObject o) {
             MyDataflowObject obj = (MyDataflowObject) o;
@@ -222,10 +225,10 @@ public class Faintness implements Flow.Analysis {
         @Override
         public void visitQuad(Quad q) {
             if (q.getOperator() instanceof Operator.Move || q.getOperator() instanceof Operator.Binary){
-                boolean faint = false;
+                boolean faint = true;
                 for (Operand.RegisterOperand def : q.getDefinedRegisters()){
-                    if (val.set.contains(def.getRegister().toString()))
-                        faint = true;
+                    if (!(val.set.contains(def.getRegister().toString())))
+                        faint = false;
                 }
                 if (! faint){
                     for (Operand.RegisterOperand def : q.getDefinedRegisters()) {
