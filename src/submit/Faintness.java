@@ -222,10 +222,10 @@ public class Faintness implements Flow.Analysis {
         @Override
         public void visitQuad(Quad q) {
             if (q.getOperator() instanceof Operator.Move || q.getOperator() instanceof Operator.Binary){
-                boolean faint = false;
+                boolean faint = true;
                 for (Operand.RegisterOperand def : q.getDefinedRegisters()){
-                    if (val.set.contains(def.getRegister().toString()))
-                        faint = true;
+                    if (!(val.set.contains(def.getRegister().toString())))
+                        faint = false;
                 }
                 if (! faint){
                     for (Operand.RegisterOperand def : q.getDefinedRegisters()) {
