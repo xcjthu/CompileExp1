@@ -150,6 +150,8 @@ public class Faintness implements Flow.Analysis {
         // initialize the entry and exit points.
         entry = new MyDataflowObject();
         exit = new MyDataflowObject();
+
+        System.out.println("Initialization completed.");
     }
 
     /**
