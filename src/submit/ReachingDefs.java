@@ -48,7 +48,7 @@ public class ReachingDefs implements Flow.Analysis {
         }
 
         @Override
-        public boolean equals(Object o){
+        public boolean equals(Object o){//when i don't complete the interface, the program will loop forever
             return ((MyDataflowObject) o).definitions.equals(definitions);
         }
 

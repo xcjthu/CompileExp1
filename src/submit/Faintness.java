@@ -4,6 +4,9 @@ package submit;
 import joeq.Compiler.Quad.*;
 import flow.Flow;
 
+import java.util.Set;
+import java.util.TreeSet;
+
 /**
  * Skeleton class for implementing a faint variable analysis
  * using the Flow.Analysis interface.
@@ -14,16 +17,40 @@ public class Faintness implements Flow.Analysis {
      * Class for the dataflow objects in the Faintness analysis.
      * You are free to change this class or move it to another file.
      */
-    public class MyDataflowObject implements Flow.DataflowObject {
+    public static class MyDataflowObject implements Flow.DataflowObject {
         /**
          * Methods from the Flow.DataflowObject interface.
          * See Flow.java for the meaning of these methods.
          * These need to be filled in.
          */
-        public void setToTop() {}
-        public void setToBottom() {}
-        public void meetWith (Flow.DataflowObject o) {}
-        public void copy (Flow.DataflowObject o) {}
+        private Set<String> set = new TreeSet<String>();
+        public static Set<String> universalSet = new TreeSet<String>();
+
+        public void setToTop() {
+            set = new TreeSet<String>();
+        }
+
+        public void setToBottom() {
+            set = new TreeSet<String>(universalSet);
+        }
+
+        public void meetWith (Flow.DataflowObject o) {
+            MyDataflowObject obj = (MyDataflowObject) o;
+            set.addAll(obj.set);
+        }
+        public void copy (Flow.DataflowObject o) {
+            MyDataflowObject obj = (MyDataflowObject) o;
+            set = new TreeSet<String>(obj.set);
+        }
+
+        @Override
+        public boolean equals(Object o){
+            if (o instanceof MyDataflowObject){
+                MyDataflowObject obj = (MyDataflowObject) o;
+                return obj.set.equals(set);
+            }
+            return false;
+        }
 
         /**
          * toString() method for the dataflow objects which is used
@@ -35,7 +62,16 @@ public class Faintness implements Flow.Analysis {
          * match this exactly.
          */
         @Override
-        public String toString() { return ""; }
+        public String toString() { return set.toString(); }
+
+        /*
+        public void genVar(String v) {
+            set.add(v);
+        }
+        public void killVar(String v) {
+            set.remove(v);
+        }
+        */
     }
 
     /**
@@ -87,6 +123,26 @@ public class Faintness implements Flow.Analysis {
         /************************************************
          * Your remaining initialization code goes here *
          ************************************************/
+        // the code below is copied from Liveness.java
+        Set<String> s = new TreeSet<String>();
+        MyDataflowObject.universalSet = s;
+
+        /* Arguments are always there. */
+        int numargs = cfg.getMethod().getParamTypes().length;
+        for (int i = 0; i < numargs; i++) {
+            s.add("R"+i);
+        }
+
+        qit = new QuadIterator(cfg);
+        while (qit.hasNext()) {
+            Quad q = qit.next();
+            for (Operand.RegisterOperand def : q.getDefinedRegisters()) {
+                s.add(def.getRegister().toString());
+            }
+            for (Operand.RegisterOperand use : q.getUsedRegisters()) {
+                s.add(use.getRegister().toString());
+            }
+        }
     }
 
     /**
@@ -114,15 +170,80 @@ public class Faintness implements Flow.Analysis {
      * See Flow.java for the meaning of these methods.
      * These need to be filled in.
      */
-    public boolean isForward () { return false; }
-    public Flow.DataflowObject getEntry() { return null; }
-    public Flow.DataflowObject getExit() { return null; }
-    public void setEntry(Flow.DataflowObject value) {}
-    public void setExit(Flow.DataflowObject value) {}
-    public Flow.DataflowObject getIn(Quad q) { return null; }
-    public Flow.DataflowObject getOut(Quad q) { return null; }
-    public void setIn(Quad q, Flow.DataflowObject value) {}
-    public void setOut(Quad q, Flow.DataflowObject value) {}
-    public Flow.DataflowObject newTempVar() { return null; }
-    public void processQuad(Quad q) {}
+    public boolean isForward () {
+        return false;
+    }
+    public Flow.DataflowObject getEntry() {
+        Flow.DataflowObject result = newTempVar();
+        result.copy(entry);
+        return result;
+    }
+    public Flow.DataflowObject getExit() {
+        Flow.DataflowObject result = newTempVar();
+        result.copy(exit);
+        return result;
+    }
+    public void setEntry(Flow.DataflowObject value) {
+
+    }
+    public void setExit(Flow.DataflowObject value) {
+
+    }
+    public Flow.DataflowObject getIn(Quad q) {
+        Flow.DataflowObject result = newTempVar();
+        result.copy(in[q.getID()]);
+        return result;
+    }
+    public Flow.DataflowObject getOut(Quad q) {
+        Flow.DataflowObject result = newTempVar();
+        result.copy(out[q.getID()]);
+        return result;
+    }
+    public void setIn(Quad q, Flow.DataflowObject value) {
+        in[q.getID()].copy(value);
+    }
+    public void setOut(Quad q, Flow.DataflowObject value) {
+        out[q.getID()].copy(value);
+    }
+    public Flow.DataflowObject newTempVar() {
+        return new MyDataflowObject();
+    }
+
+    private TransferFunction transferfn = new TransferFunction();
+    public void processQuad(Quad q) {
+        transferfn.val.copy(out[q.getID()]);
+        transferfn.visitQuad(q);
+        in[q.getID()].copy(transferfn.val);
+    }
+
+    /* The QuadVisitor that actually does the computation */
+    public static class TransferFunction extends QuadVisitor.EmptyVisitor {
+        MyDataflowObject val = new MyDataflowObject();
+        @Override
+        public void visitQuad(Quad q) {
+            if (q.getOperator() instanceof Operator.Move || q.getOperator() instanceof Operator.Binary){
+                boolean faint = false;
+                for (Operand.RegisterOperand def : q.getDefinedRegisters()){
+                    if (val.set.contains(def.getRegister().toString()))
+                        faint = true;
+                }
+                if (! faint){
+                    for (Operand.RegisterOperand def : q.getDefinedRegisters()) {
+                        val.set.add(def.getRegister().toString());
+                    }
+                    for (Operand.RegisterOperand use : q.getUsedRegisters()) {
+                        val.set.remove(use.getRegister().toString());
+                    }
+                }
+            }
+            else{
+                for (Operand.RegisterOperand def : q.getDefinedRegisters()) {
+                    val.set.add(def.getRegister().toString());
+                }
+                for (Operand.RegisterOperand use : q.getUsedRegisters()) {
+                    val.set.remove(use.getRegister().toString());
+                }
+            }
+        }
+    }
 }
