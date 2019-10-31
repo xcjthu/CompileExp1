@@ -184,10 +184,10 @@ public class Faintness implements Flow.Analysis {
         return result;
     }
     public void setEntry(Flow.DataflowObject value) {
-
+        entry.copy(value);
     }
     public void setExit(Flow.DataflowObject value) {
-
+        exit.copy(value);
     }
     public Flow.DataflowObject getIn(Quad q) {
         Flow.DataflowObject result = newTempVar();
@@ -222,10 +222,10 @@ public class Faintness implements Flow.Analysis {
         @Override
         public void visitQuad(Quad q) {
             if (q.getOperator() instanceof Operator.Move || q.getOperator() instanceof Operator.Binary){
-                boolean faint = true;
+                boolean faint = false;
                 for (Operand.RegisterOperand def : q.getDefinedRegisters()){
-                    if (!(val.set.contains(def.getRegister().toString())))
-                        faint = false;
+                    if (val.set.contains(def.getRegister().toString()))
+                        faint = true;
                 }
                 if (! faint){
                     for (Operand.RegisterOperand def : q.getDefinedRegisters()) {
