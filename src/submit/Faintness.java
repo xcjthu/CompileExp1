@@ -107,25 +107,12 @@ public class Faintness implements Flow.Analysis {
         }
         max += 1;
 
-        // allocate the in and out arrays.
-        in = new MyDataflowObject[max];
-        out = new MyDataflowObject[max];
 
-        // initialize the contents of in and out.
-        qit = new QuadIterator(cfg);
-        while (qit.hasNext()) {
-            int id = qit.next().getID();
-            in[id] = new MyDataflowObject();
-            out[id] = new MyDataflowObject();
-        }
-
-        // initialize the entry and exit points.
-        entry = new MyDataflowObject();
-        exit = new MyDataflowObject();
 
         /************************************************
          * Your remaining initialization code goes here *
          ************************************************/
+        // the initialization should be excuted before the initialization in/out/entry/exit
         // the code below is copied from Liveness.java
         Set<String> s = new TreeSet<String>();
         MyDataflowObject.universalSet = s;
@@ -146,6 +133,23 @@ public class Faintness implements Flow.Analysis {
                 s.add(use.getRegister().toString());
             }
         }
+
+
+        // allocate the in and out arrays.
+        in = new MyDataflowObject[max];
+        out = new MyDataflowObject[max];
+
+        // initialize the contents of in and out.
+        qit = new QuadIterator(cfg);
+        while (qit.hasNext()) {
+            int id = qit.next().getID();
+            in[id] = new MyDataflowObject();
+            out[id] = new MyDataflowObject();
+        }
+
+        // initialize the entry and exit points.
+        entry = new MyDataflowObject();
+        exit = new MyDataflowObject();
     }
 
     /**
